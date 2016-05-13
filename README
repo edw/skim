@@ -1,3 +1,86 @@
 # Skim
 
-Skim makes Scheme a little more Clojure-esque.
+Skim makes Scheme a little more Clojure-esque. How?
+
+First, Skim offers flatter syntax for conditionals and binding.
+
+(define (fib n)
+  (cond ((zero? n) 0)
+        ((= n 1) 1)
+        (else (+ (fib (- n 1)) (fib (- n 2))))))
+
+Becomes:
+
+(define (fib n)
+  (cind (zero? n) 0
+        (= n 1) 1
+        else (+ (fib (- n 1)) (fib (- n 2)))))
+
+While
+
+(define (sum-squares a b)
+  (let ((a2 (* a a))
+        (b2 (* b b)))
+    (+ a2 b2)))
+
+Becomes: 
+
+(define (sum-squares a b)
+  (lit (a2 (* a a)
+        b2 (* b b))
+    (+ a2 b2)))
+
+Named-let also gets slimmed down:
+
+(define (factorial n)
+  (lip iter
+      (i 1 product 1)
+    (if (= i n)
+        product
+        (iter (+ i 1) (* i product)))))
+
+Clojure's `for` form is fully supported:
+
+(fir (x '(1 2 3 13)
+      y '(7 8)
+      lit: (z (* x y))
+      when: (odd? z)
+      lit: (a (* 2 z))
+      while: (< a 170))
+     (/ a 3))
+
+Expands to
+
+(let iter ((in '(1 2 3 13)) (out '()))
+  (if (null? in)
+    (reverse out)
+    (letrec ((x (car in)))
+      (let iter2 ((in2 '(7 8)) (out2 out))
+        (if (null? in2)
+          (iter (cdr in) out2)
+          (letrec ((y (car in2)))
+            (letrec ((z (* x y)))
+              (if (odd? z)
+                (letrec ((a (* 2 z)))
+                  (if (< a 170)
+                    (iter2 (cdr in2) (cons (/ a 3) out2))
+                    (reverse out2)))
+                (iter2 (cdr in2) out2)))))))))
+
+
+Clojure-style multiple signature function definitions are available
+using Shinn's pattern matching library. (For both anonymous procedures
+and definitions using `fn` and `defn`, respectively.)
+
+(defn add
+  ((x) x)
+  ((x y) (+ x y)))
+
+Here's an example that uses `defn`, `lip`, and `cind`:
+
+(defn sum
+  ((n) (lip iter (n 10 sum 0)
+             (cind (> n 0)
+                   (iter (- n 1) (+ sum n))
+                   else
+                   sum))))

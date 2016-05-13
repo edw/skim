@@ -99,39 +99,3 @@
               (lit (name1 (car in))
                    (fir (name2 ...) form iter in out)))))))
 
-(fir (x '(1 2 3 13)
-      y '(7 8)
-      lit: (z (* x y))
-      when: (odd? z)
-      lit: (a (* 2 z))
-      while: (< a 170))
-     (/ a 3))
-
-;; The above expands to
-;;
-;; (let iter ((in '(1 2 3 13)) (out '()))
-;;   (if (null? in)
-;;     (reverse out)
-;;     (letrec ((x (car in)))
-;;       (let iter2 ((in2 '(7 8)) (out2 out))
-;;         (if (null? in2)
-;;           (iter (cdr in) out2)
-;;           (letrec ((y (car in2)))
-;;             (letrec ((z (* x y)))
-;;               (if (odd? z)
-;;                 (letrec ((a (* 2 z)))
-;;                   (if (< a 170)
-;;                     (iter2 (cdr in2) (cons (/ a 3) out2))
-;;                     (reverse out2)))
-;;                 (iter2 (cdr in2) out2)))))))))
-
-(defn add
-  ((x) x)
-  ((x y) (+ x y)))
-
-(defn sum
-  ((n) (lip iter (n 10 sum 0)
-             (cind (> n 0)
-                   (iter (- n 1) (+ sum n))
-                   else
-                   sum))))
