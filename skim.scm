@@ -99,3 +99,20 @@
               (lit (name1 (car in))
                    (fir (name2 ...) form iter in out)))))))
 
+(define-syntax ->
+  (syntax-rules ()
+    ((_ value)
+     value)
+    ((_ value (proc arg ...))
+     (-> (proc value arg ...)))
+    ((_ value (proc arg ...) (proc2 ...))
+     (-> (proc value arg ...) (proc2 ...)))))
+
+(define-syntax -->
+  (syntax-rules ()
+    ((_ value)
+     value)
+    ((_ value (proc arg ...))
+     (--> (proc arg ... value)))
+    ((_ value (proc arg ...) (proc2 ...))
+     (--> (proc arg ... value) (proc2 ...)))))
