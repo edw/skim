@@ -76,6 +76,8 @@ and definitions using `fn` and `defn`, respectively.)
   ((x) x)
   ((x y) (+ x y)))
 
+The `->` and `-->` syntax are also supported.
+
 Here's an example that uses `defn`, `lip`, and `cind`:
 
 (defn sum
