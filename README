@@ -81,9 +81,10 @@ The `->` and `-->` syntax are also supported.
 Here's an example that uses `defn`, `lip`, and `cind`:
 
 (defn sum
+  "Add all integers from 0 to `n` inclusive"
   #(n)
-  (lip iter #(n 10 sum 0)
+  (lip iter #(n n sum 0)
        (cind (> n 0)
              (iter (- n 1) (+ sum n))
              else
-             sum))))
+             sum)))
