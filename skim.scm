@@ -66,7 +66,7 @@
 (define-syntax lip
   (syntax-rules ()
     ((_ proc #(binding ...) . body)
-     (lit #(proc (bindings-lambda (binding ...) body ()))
+     (letrec ((proc (bindings-lambda (binding ...) body ())))
        (bindings-apply proc (binding ...) ())))))
 
 (define-syntax cind
