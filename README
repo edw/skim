@@ -2,7 +2,7 @@
 
 Skim makes Scheme a little more Clojure-esque. How?
 
-First, Skim offers flatter syntax for conditionals and binding.
+Skim offers flatter syntax for bindings, conditionals, and function definitions.
 
 (define (fib n)
   (cond ((zero? n) 0)
@@ -11,28 +11,28 @@ First, Skim offers flatter syntax for conditionals and binding.
 
 Becomes:
 
-(define (fib n)
+(defn fib #(n)
   (cind (zero? n) 0
         (= n 1) 1
         else (+ (fib (- n 1)) (fib (- n 2)))))
 
-While
+And this:
 
 (define (sum-squares a b)
   (let ((a2 (* a a))
         (b2 (* b b)))
     (+ a2 b2)))
 
-Becomes: 
+Becomes:
 
-(define (sum-squares a b)
+(defn sum-squares #(a b)
   (lit #(a2 (* a a)
          b2 (* b b))
     (+ a2 b2)))
 
 Named-let also gets slimmed down:
 
-(define (factorial n)
+(defn factorial #(n)
   (lip iter
       #(i 1 product 1)
     (if (= i n)
@@ -49,7 +49,7 @@ Clojure's `for` form is fully supported:
        while: (< a 170))
      (/ a 3))
 
-Expands to
+Expands to:
 
 (let iter2-1 ((in2-1 (cursor '(1 2 3 13))) (out2 '()))
   (if (cursor-null? in2-1)
@@ -68,6 +68,11 @@ Expands to
                     (reverse out2)))
                 (iter2 (cursor-next in2) out2)))))))))
 
+`For` depends on `cursor`, a procedure that allows lists and vectors
+to be iterated upon. `Cursor-value`, `cursor-next`, and `cursor-null?`
+are used to get the current cursor value, non-destructively advance
+the cursor position, and detect end-of-collection conditions.
+
 Clojure-style multiple signature function definitions are available
 using Shinn's pattern matching library. (For both anonymous procedures
 and definitions using `fn` and `defn`, respectively.)
@@ -76,7 +81,9 @@ and definitions using `fn` and `defn`, respectively.)
   (#(x) x)
   (#(x y) (+ x y)))
 
-The `->` and `-->` syntax are also supported.
+(fn #(x) (+ x 1))
+
+Additionally, `->` and `-->` syntax are supported.
 
 Here's an example that uses `defn`, `lip`, and `cind`:
 
@@ -88,3 +95,7 @@ Here's an example that uses `defn`, `lip`, and `cind`:
              (iter (- n 1) (+ sum n))
              else
              sum)))
+
+Why the weird names? Because it's important that you continue to be
+able to write plain-old Scheme. Because including Skim shouldn't
+change the meaning of existing code.
