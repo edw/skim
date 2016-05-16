@@ -139,10 +139,11 @@
                    (fir #(name2 ...) form iter2 in2 out2)))))
 
     ((_ #(name1 values1 name2 ...) form)
-     (lip iter #(in values1 out '())
-          (if (null? in) (reverse out)
-              (lit #(name1 (car in))
-                   (fir #(name2 ...) form iter in out)))))))
+     (fir #(name1 values1 name2 ...)
+          form
+          (lambda (_ out) (reverse out))
+          '(dummy)
+          '()))))
 
 (define-syntax ->
   (syntax-rules ()
