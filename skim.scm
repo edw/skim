@@ -116,34 +116,30 @@
 (define-syntax fir
   (syntax-rules (lit: when: while:)
 
-    ((_ #() form iter in out)
-     (iter (cursor-next in) (cons form out)))
+    ((_ #() form outer-iter outer-in outer-out)
+     (outer-iter (cursor-next outer-in) (cons form outer-out)))
 
-    ((_ #(while: pred-form name ...) form iter in out)
+    ((_ #(while: pred-form name ...) form outer-iter outer-in outer-out)
      (if pred-form
-         (fir #(name ...) form iter in out)
-         (reverse out)))
+         (fir #(name ...) form outer-iter outer-in outer-out)
+         (reverse outer-out)))
     
-    ((_ #(when: pred-form name ...) form iter in out)
+    ((_ #(when: pred-form name ...) form outer-iter outer-in outer-out)
      (if pred-form
-         (fir #(name ...) form iter in out)
-         (iter (cursor-next in) out)))
+         (fir #(name ...) form outer-iter outer-in outer-out)
+         (outer-iter (cursor-next outer-in) outer-out)))
 
-    ((_ #(lit: #(binding ...) name ...) form iter in out)
-     (lit #(binding ...) (fir #(name ...) form iter in out)))
+    ((_ #(lit: #(binding ...) name ...) form outer-iter outer-in outer-out)
+     (lit #(binding ...) (fir #(name ...) form outer-iter outer-in outer-out)))
 
-    ((_ #(name1 values1 name2 ...) form iter in out)
-     (lip iter2 #(in2 (cursor values1) out2 out)
-          (if (cursor-null? in2) (iter (cursor-next in) out2)
-              (lit #(name1 (cursor-value in2))
-                   (fir #(name2 ...) form iter2 in2 out2)))))
+    ((_ #(name1 values1 name2 ...) form outer-iter outer-in outer-out)
+     (lip iter #(in (cursor values1) out outer-out)
+          (if (cursor-null? in) (outer-iter (cursor-next outer-in) out)
+              (lit #(name1 (cursor-value in))
+                   (fir #(name2 ...) form iter in out)))))
 
-    ((_ #(name1 values1 name2 ...) form)
-     (fir #(name1 values1 name2 ...)
-          form
-          (lambda (_ out) (reverse out))
-          (cursor '())
-          '()))))
+    ((_ bindings form)
+     (fir bindings form (lambda (_ out) (reverse out)) (cursor '()) '()))))
 
 (define-syntax ->
   (syntax-rules ()
