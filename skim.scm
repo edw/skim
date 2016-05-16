@@ -85,7 +85,9 @@
                            ((equal? method 'next)
                             (if (not (null? col))
                                 (set! col (cdr col)))
-                            proc)))))
+                            proc)
+                           ((equal? method 'null?)
+                            (null? col))))))
            proc))
         ((vector? col)
          (let ((index 0)
@@ -93,19 +95,23 @@
            (letrec ((proc
                      (lambda (method)
                        (cond ((equal? method 'value)
-                              (if (> index count)
-                                  '()
-                                  (vector-ref col index)))
+                              (if (< index count)
+                                  (vector-ref col index)
+                                  '()))
                              ((equal? method 'next)
                               (if (< index count)
                                   (set! index (+ index 1)))
-                              proc)))))
+                              proc)
+                             ((equal? method 'null?)
+                              (not (< index count)))))))
              proc)))
         (else (error "Unsupported type"))))
 
 (define (cursor-value c) (c 'value))
 
 (define (cursor-next c) (c 'next))
+
+(define (cursor-null? c) (c 'null?))
 
 (define-syntax fir
   (syntax-rules (lit: when: while:)
