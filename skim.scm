@@ -117,7 +117,7 @@
   (syntax-rules (lit: when: while:)
 
     ((_ #() form iter in out)
-     (iter (cdr in) (cons form out)))
+     (iter (cursor-next in) (cons form out)))
 
     ((_ #(while: pred-form name ...) form iter in out)
      (if pred-form
@@ -127,22 +127,22 @@
     ((_ #(when: pred-form name ...) form iter in out)
      (if pred-form
          (fir #(name ...) form iter in out)
-         (iter (cdr in) out)))
+         (iter (cursor-next in) out)))
 
     ((_ #(lit: #(binding ...) name ...) form iter in out)
      (lit #(binding ...) (fir #(name ...) form iter in out)))
 
     ((_ #(name1 values1 name2 ...) form iter in out)
-     (lip iter2 #(in2 values1 out2 out)
-          (if (null? in2) (iter (cdr in) out2)
-              (lit #(name1 (car in2))
+     (lip iter2 #(in2 (cursor values1) out2 out)
+          (if (cursor-null? in2) (iter (cursor-next in) out2)
+              (lit #(name1 (cursor-value in2))
                    (fir #(name2 ...) form iter2 in2 out2)))))
 
     ((_ #(name1 values1 name2 ...) form)
      (fir #(name1 values1 name2 ...)
           form
           (lambda (_ out) (reverse out))
-          '(dummy)
+          (cursor '())
           '()))))
 
 (define-syntax ->
