@@ -43,7 +43,7 @@
      (begin . body))
 
     ((_ #(name value name2 ...) . body)
-     (letrec ((name value)) (lit #(name2 ...) . body)))))
+     (let ((name value)) (lit #(name2 ...) . body)))))
 
 (define-syntax bindings-lambda
   (syntax-rules ()
