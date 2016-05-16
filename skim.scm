@@ -10,22 +10,40 @@
 
 (define-syntax fn
   (syntax-rules ()
-    ((_ (pattern . body) ...)
-     (lambda expr (match expr (pattern . body) ...)))))
+    ((_ (#(pat-elem ...) . body) ...)
+     (lambda expr (match expr ((pat-elem ...) . body) ...)))
+
+    ((_ #(pat-elem ...) . body)
+     (lambda expr (match expr ((pat-elem ...) . body))))
+
+    ((_ docstring (#(pat-elem ...) . body) ...)
+     (lambda expr docstring (match expr ((pat-elem ...) . body) ...)))
+
+    ((_ docstring #(pat-elem ...) . body)
+     (lambda expr docstring (match expr ((pat-elem ...) . body))))))
 
 (define-syntax defn
   (syntax-rules ()
-    ((_ name (pattern . body) ...)
-     (define name (fn (pattern . body) ...)))))
+    ((_ name (#(pat-elem ...) . body) ...)
+     (define name (fn (#(pat-elem ...) . body) ...)))
+
+    ((_ name #(pat-elem ...) . body)
+     (define name (fn #(pat-elem ...) . body)))
+
+    ((_ name docstring (#(pat-elem ...) . body) ...)
+     (define name (fn docstring (#(pat-elem ...) . body) ...)))
+
+    ((_ name docstring #(pat-elem ...) . body)
+     (define name (fn docstring #(pat-elem ...) . body)))))
 
 (define-syntax lit
   (syntax-rules ()
 
-    ((_ () . body)
+    ((_ #() . body)
      (begin . body))
 
-    ((_ (name value . nvs) . body)
-     (letrec ((name value)) (lit nvs . body)))))
+    ((_ #(name value name2 ...) . body)
+     (letrec ((name value)) (lit #(name2 ...) . body)))))
 
 (define-syntax bindings-lambda
   (syntax-rules ()
@@ -47,57 +65,78 @@
 
 (define-syntax lip
   (syntax-rules ()
-    ((_ proc bindings . body)
-     (lit (proc (bindings-lambda bindings body ()))
-       (bindings-apply proc bindings ())))))
+    ((_ proc #(binding ...) . body)
+     (lit #(proc (bindings-lambda (binding ...) body ()))
+       (bindings-apply proc (binding ...) ())))))
 
 (define-syntax cind
   (syntax-rules (else)
     ((_ else form) form)
     ((_ test form . tfs) (if test form (cind . tfs)))))
 
-(define-syntax fir
-  (syntax-rules (lit:)
+(define (cursor col)
+  (cond ((list? col)
+         (letrec ((proc
+                   (lambda (method)
+                     (cond ((equal? method 'value)
+                            (if (null? col)
+                                '()
+                                (car col)))
+                           ((equal? method 'next)
+                            (if (not (null? col))
+                                (set! col (cdr col)))
+                            proc)))))
+           proc))
+        ((vector? col)
+         (let ((index 0)
+               (count (vector-length col)))
+           (letrec ((proc
+                     (lambda (method)
+                       (cond ((equal? method 'value)
+                              (if (> index count)
+                                  '()
+                                  (vector-ref col index)))
+                             ((equal? method 'next)
+                              (if (< index count)
+                                  (set! index (+ index 1)))
+                              proc)))))
+             proc)))
+        (else (error "Unsupported type"))))
 
-    ((_ () form)
-     form)
+(define (cursor-value c) (c 'value))
 
-    ((_ (lit: bindings name2 ...) form)
-     (lit bindings (fir (name2 ...) form)))
-
-    ((_ (name1 values1 name2 ...) form)
-     (map (lambda (name1) (fir (name2 ...) form)) values1))))
+(define (cursor-next c) (c 'next))
 
 (define-syntax fir
   (syntax-rules (lit: when: while:)
 
-    ((_ () form iter in out)
+    ((_ #() form iter in out)
      (iter (cdr in) (cons form out)))
 
-    ((_ (while: pred-form name ...) form iter in out)
+    ((_ #(while: pred-form name ...) form iter in out)
      (if pred-form
-         (fir (name ...) form iter in out)
+         (fir #(name ...) form iter in out)
          (reverse out)))
     
-    ((_ (when: pred-form name ...) form iter in out)
+    ((_ #(when: pred-form name ...) form iter in out)
      (if pred-form
-         (fir (name ...) form iter in out)
+         (fir #(name ...) form iter in out)
          (iter (cdr in) out)))
 
-    ((_ (lit: bindings name ...) form iter in out)
-     (lit bindings (fir (name ...) form iter in out)))
+    ((_ #(lit: #(binding ...) name ...) form iter in out)
+     (lit #(binding ...) (fir #(name ...) form iter in out)))
 
-    ((_ (name1 values1 name2 ...) form iter in out)
-     (lip iter2 (in2 values1 out2 out)
+    ((_ #(name1 values1 name2 ...) form iter in out)
+     (lip iter2 #(in2 values1 out2 out)
           (if (null? in2) (iter (cdr in) out2)
-              (lit (name1 (car in2))
-                   (fir (name2 ...) form iter2 in2 out2)))))
+              (lit #(name1 (car in2))
+                   (fir #(name2 ...) form iter2 in2 out2)))))
 
-    ((_ (name1 values1 name2 ...) form)
-     (lip iter (in values1 out '())
+    ((_ #(name1 values1 name2 ...) form)
+     (lip iter #(in values1 out '())
           (if (null? in) (reverse out)
-              (lit (name1 (car in))
-                   (fir (name2 ...) form iter in out)))))))
+              (lit #(name1 (car in))
+                   (fir #(name2 ...) form iter in out)))))))
 
 (define-syntax ->
   (syntax-rules ()
