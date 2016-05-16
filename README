@@ -26,63 +26,64 @@ While
 Becomes: 
 
 (define (sum-squares a b)
-  (lit (a2 (* a a)
-        b2 (* b b))
+  (lit #(a2 (* a a)
+         b2 (* b b))
     (+ a2 b2)))
 
 Named-let also gets slimmed down:
 
 (define (factorial n)
   (lip iter
-      (i 1 product 1)
+      #(i 1 product 1)
     (if (= i n)
         product
         (iter (+ i 1) (* i product)))))
 
 Clojure's `for` form is fully supported:
 
-(fir (x '(1 2 3 13)
-      y '(7 8)
-      lit: (z (* x y))
-      when: (odd? z)
-      lit: (a (* 2 z))
-      while: (< a 170))
+(fir #(x '(1 2 3 13)
+       y #(7 8)
+       lit: #(z (* x y))
+       when: (odd? z)
+       lit: #(a (* 2 z))
+       while: (< a 170))
      (/ a 3))
 
 Expands to
 
-(let iter ((in '(1 2 3 13)) (out '()))
-  (if (null? in)
-    (reverse out)
-    (letrec ((x (car in)))
-      (let iter2 ((in2 '(7 8)) (out2 out))
-        (if (null? in2)
-          (iter (cdr in) out2)
-          (letrec ((y (car in2)))
+(let iter2-1 ((in2-1 (cursor '(1 2 3 13))) (out2 '()))
+  (if (cursor-null? in2-1)
+    (let ((_ (cursor-next (cursor '()))) (out out2))
+      (reverse out))
+    (letrec ((x (cursor-value in2-1)))
+      (let iter2 ((in2 (cursor '#(7 8))) (out2 out2))
+        (if (cursor-null? in2)
+          (iter2-1 (cursor-next in2-1) out2)
+          (letrec ((y (cursor-value in2)))
             (letrec ((z (* x y)))
               (if (odd? z)
                 (letrec ((a (* 2 z)))
                   (if (< a 170)
-                    (iter2 (cdr in2) (cons (/ a 3) out2))
+                    (iter2 (cursor-next in2) (cons (/ a 3) out2))
                     (reverse out2)))
-                (iter2 (cdr in2) out2)))))))))
-
+                (iter2 (cursor-next in2) out2)))))))))
 
 Clojure-style multiple signature function definitions are available
 using Shinn's pattern matching library. (For both anonymous procedures
 and definitions using `fn` and `defn`, respectively.)
 
-(defn add
-  ((x) x)
-  ((x y) (+ x y)))
+(defn add "Add number(s)"
+  (#(x) x)
+  (#(x y) (+ x y)))
 
 The `->` and `-->` syntax are also supported.
 
 Here's an example that uses `defn`, `lip`, and `cind`:
 
 (defn sum
-  ((n) (lip iter (n 10 sum 0)
-             (cind (> n 0)
-                   (iter (- n 1) (+ sum n))
-                   else
-                   sum))))
+  #(n)
+  (lip iter #(n 10 sum 0)
+       (cind (> n 0)
+             (iter (- n 1) (+ sum n))
+             else
+             sum))))
