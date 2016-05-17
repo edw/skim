@@ -69,8 +69,8 @@ Expands to:
 
 `For` depends on `cursor`, a procedure that allows lists and vectors
 to be iterated upon. `Cursor-value`, `cursor-next`, and `cursor-null?`
-are used to get the current cursor value, non-destructively advance
-the cursor position, and detect end-of-collection conditions.
+are used to get the current cursor value, advance the cursor position,
+and detect end-of-collection conditions.
 
 Clojure-style multiple signature function definitions are available
 using Shinn's pattern matching library. (For both anonymous procedures
