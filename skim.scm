@@ -108,9 +108,7 @@
         (else (error "Unsupported type"))))
 
 (define (cursor-value c) (c 'value))
-
 (define (cursor-next c) (c 'next))
-
 (define (cursor-null? c) (c 'null?))
 
 (define-syntax fir
@@ -138,8 +136,12 @@
               (lit #(name1 (cursor-value in))
                    (fir #(name2 ...) form iter in out)))))
 
-    ((_ bindings form)
-     (fir bindings form (lambda (_ out) (reverse out)) (cursor '()) '()))))
+    ((_ #(binding ...) form)
+     (fir #(binding ...)
+          form
+          (lambda (_ out) (reverse out))
+          (cursor '())
+          '()))))
 
 (define-syntax ->
   (syntax-rules ()
@@ -158,3 +160,5 @@
      (--> (proc arg ... value)))
     ((_ value (proc arg ...) (proc2 ...))
      (--> (proc arg ... value) (proc2 ...)))))
+
+
