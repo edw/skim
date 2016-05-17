@@ -12,5 +12,7 @@
 
 (lit #(a (+ 1 1)) a)
 
+(fir #(x '(1 2 3)) x)
+
 
 (lip iter #(a (cursor '(0 1 2 3 4))) (if (cursor-null? a) 'foo (iter (cursor-next a))))
