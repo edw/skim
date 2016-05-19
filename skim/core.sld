@@ -170,7 +170,7 @@
              (dosiq #(name ...) form outer-iter outer-in)))
 
        ((_ #(name1 values1 name2 ...) form outer-iter outer-in)
-        (lip iter #(in (cursor values1) out)
+        (lip iter #(in (cursor values1))
              (if (cursor-null? in) (outer-iter (cursor-next! outer-in))
                  (lit #(name1 (cursor-value in))
                       (dosiq #(name2 ...) form iter in)))))
