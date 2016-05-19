@@ -158,25 +158,25 @@
 
        ((_ #(while: pred-form name ...) form outer-iter outer-in)
         (if pred-form
-            (fir #(name ...) form outer-iter outer-in)))
+            (dosiq #(name ...) form outer-iter outer-in)))
       
        ((_ #(when: pred-form name ...) form outer-iter outer-in)
         (if pred-form
-            (fir #(name ...) form outer-iter outer-in)
+            (dosiq #(name ...) form outer-iter outer-in)
             (outer-iter (cursor-next! outer-in))))
 
        ((_ #(lit: #(binding ...) name ...) form outer-iter outer-in)
         (lit #(binding ...)
-             (fir #(name ...) form outer-iter outer-in)))
+             (dosiq #(name ...) form outer-iter outer-in)))
 
        ((_ #(name1 values1 name2 ...) form outer-iter outer-in)
         (lip iter #(in (cursor values1) out)
              (if (cursor-null? in) (outer-iter (cursor-next! outer-in))
                  (lit #(name1 (cursor-value in))
-                      (fir #(name2 ...) form iter in)))))
+                      (dosiq #(name2 ...) form iter in)))))
 
        ((_ #(binding ...) form)
-        (fir #(binding ...)
+        (dosiq #(binding ...)
              form
              (lambda (_) (values))
              (cursor '())))))
