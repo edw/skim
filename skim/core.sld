@@ -154,7 +154,8 @@
      (syntax-rules (lit: when: while:)
 
        ((_ #() form outer-iter outer-in)
-        (outer-iter (cursor-next! outer-in)))
+        (begin form
+               (outer-iter (cursor-next! outer-in))))
 
        ((_ #(while: pred-form name ...) form outer-iter outer-in)
         (if pred-form
